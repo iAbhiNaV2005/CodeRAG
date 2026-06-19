@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════════
+# Code RAG Gateway — Spring Boot Configuration
+# ═══════════════════════════════════════════════════════════
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: code-rag-gateway
+
+# ── Downstream FastAPI service ────────────────────────────
+gateway:
+  fastapi:
+    base-url: http://localhost:8000
+
+# ── JWT Configuration ─────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET:code-rag-super-secret-key-change-in-production-at-least-256-bits-long}
+  expiration-ms: 86400000  # 24 hours
+
+# ── Rate Limiting ─────────────────────────────────────────
+rate-limit:
+  requests-per-minute: 30
+  burst-size: 10
+
+# ── AWS / DynamoDB ────────────────────────────────────────
+aws:
+  region: ${AWS_REGION:us-east-1}
+  endpoint-url: ${AWS_ENDPOINT_URL:http://localhost:8001}
+  access-key-id: ${AWS_ACCESS_KEY_ID:test}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:test}
+  dynamodb:
+    rate-limits-table: ${DYNAMODB_RATE_LIMITS_TABLE:rate_limits}
+
+# ── Actuator ──────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# ── Logging ───────────────────────────────────────────────
+logging:
+  level:
+    com.coderag.gateway: DEBUG
+    org.springframework.security: INFO

@@ -1,0 +1,18 @@
+# ═══════════════════════════════════════════════════════════
+# terraform.tfvars.example
+#
+# Copy to terraform.tfvars and fill in your values:
+#   cp terraform.tfvars.example terraform.tfvars
+# ═══════════════════════════════════════════════════════════
+
+aws_region = "us-east-1"
+
+# Secrets (required)
+db_password    = "CHANGE_ME_strong_password_here"
+jwt_secret     = "CHANGE_ME_at_least_32_characters_long_secret_key"
+google_api_key = "YOUR_GOOGLE_AI_API_KEY"
+github_token   = "YOUR_GITHUB_PAT"
+
+# EC2
+ec2_instance_type = "t3.small"
+ec2_key_pair      = ""  # Your existing SSH key pair name

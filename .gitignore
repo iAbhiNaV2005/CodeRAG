@@ -1,0 +1,52 @@
+# ═══════════════════════════════════════════════
+# Terraform
+# ═══════════════════════════════════════════════
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ═══════════════════════════════════════════════
+# Python
+# ═══════════════════════════════════════════════
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# ═══════════════════════════════════════════════
+# Java / Maven
+# ═══════════════════════════════════════════════
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ═══════════════════════════════════════════════
+# Node / Next.js
+# ═══════════════════════════════════════════════
+node_modules/
+.next/
+out/
+
+# ═══════════════════════════════════════════════
+# IDE / OS
+# ═══════════════════════════════════════════════
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
