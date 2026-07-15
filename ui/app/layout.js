@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "code rag",
+  title: "coderag",
   description: "ask questions about any github repo",
 };
 
