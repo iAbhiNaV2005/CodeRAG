@@ -1,12 +1,10 @@
 /** @type {import('next').NextConfig} */
-const apiProxyUrl = process.env.API_PROXY_URL || 'http://localhost:8080';
-
 const nextConfig = {
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${apiProxyUrl}/:path*`,
+        destination: `http://34.238.209.25:8080/:path*`,
       },
     ]
   },
