@@ -1,39 +1,5 @@
-# ═══════════════════════════════════════════════════════════
-# RDS PostgreSQL with pgvector
-# ═══════════════════════════════════════════════════════════
-
-resource "aws_db_subnet_group" "main" {
-  name       = "${var.project_name}-db-subnet"
-  subnet_ids = [aws_subnet.public_a.id, aws_subnet.public_b.id]
-  tags       = { Name = "${var.project_name}-db-subnet" }
-}
-
-resource "aws_db_instance" "postgres" {
-  identifier     = "${var.project_name}-db"
-  engine         = "postgres"
-  engine_version = "16.3"
-  instance_class = "db.t3.micro"
-
-  allocated_storage = 20
-  storage_encrypted = false
-
-  db_name  = "coderag"
-  username = "coderag"
-  password = var.db_password
-
-  db_subnet_group_name   = aws_db_subnet_group.main.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
-  publicly_accessible    = false
-
-  skip_final_snapshot     = true
-  backup_retention_period = 0
-
-  tags = { Name = "${var.project_name}-db" }
-}
-
-# ═══════════════════════════════════════════════════════════
-# DynamoDB Tables
-# ═══════════════════════════════════════════════════════════
+# DynamoDB tables and S3 bucket used by the backend.
+# PostgreSQL/pgvector now runs on the EC2 instance to avoid a separate RDS bill.
 
 resource "aws_dynamodb_table" "repos" {
   name         = "repos"
@@ -89,10 +55,6 @@ resource "aws_dynamodb_table" "rate_limits" {
   tags = { Name = "${var.project_name}-rate-limits" }
 }
 
-# ═══════════════════════════════════════════════════════════
-# S3 Bucket for code storage
-# ═══════════════════════════════════════════════════════════
-
 resource "aws_s3_bucket" "code_repos" {
   bucket_prefix = "${var.project_name}-repos-"
   force_destroy = true
@@ -109,7 +71,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "code_repos" {
     filter {}
 
     expiration {
-      days = 30
+      days = var.s3_expiration_days
     }
   }
 }

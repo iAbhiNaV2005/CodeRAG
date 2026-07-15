@@ -12,6 +12,8 @@ Next.js UI → Spring Boot Gateway (JWT + Rate Limit) → FastAPI (RAG Pipeline)
                                                    S3 (raw files)
 ```
 
+For the low-cost AWS resume-demo deployment, PostgreSQL/pgvector runs in Docker on the same EC2 instance as the backend services. See [infra/AWS_REDEPLOY.md](infra/AWS_REDEPLOY.md).
+
 ## Project Structure
 
 ```

@@ -1,18 +1,33 @@
-# ═══════════════════════════════════════════════════════════
-# terraform.tfvars.example
-#
-# Copy to terraform.tfvars and fill in your values:
-#   cp terraform.tfvars.example terraform.tfvars
-# ═══════════════════════════════════════════════════════════
-
 aws_region = "us-east-1"
 
-# Secrets (required)
+# Secrets
 db_password    = "CHANGE_ME_strong_password_here"
 jwt_secret     = "CHANGE_ME_at_least_32_characters_long_secret_key"
 google_api_key = "YOUR_GOOGLE_AI_API_KEY"
 github_token   = "YOUR_GITHUB_PAT"
 
-# EC2
-ec2_instance_type = "t3.small"
-ec2_key_pair      = ""  # Your existing SSH key pair name
+# EC2 backend
+ec2_instance_type  = "t3.small"
+ec2_root_volume_gb = 20
+ec2_key_pair       = "CodeRAG"
+
+# Keep Spot off for the stable resume-demo deploy.
+# Turn it on only if you are okay with occasional interruptions.
+use_spot_instance = false
+spot_max_price    = ""
+
+# Recommended: replace allowed_ssh_cidr with your current IP as x.x.x.x/32.
+# Keep allowed_api_cidr open if Vercel proxies to this EC2 directly.
+allowed_ssh_cidr = "0.0.0.0/0"
+allowed_api_cidr = "0.0.0.0/0"
+
+# Build and push these images before terraform apply, then put your real names here.
+pipeline_image = "ghcr.io/iabhinav2005/coderag-pipeline:latest"
+gateway_image  = "ghcr.io/iabhinav2005/coderag-gateway:latest"
+
+# Raw fetched repository files expire from S3 to keep costs low.
+s3_expiration_days = 7
+
+# Auto stop/start schedule — saves ~67% on EC2 compute.
+# Stops at midnight IST, starts at 8 AM IST. Set to false to disable.
+enable_auto_schedule = true

@@ -11,11 +11,12 @@ resource "aws_secretsmanager_secret" "app_secrets" {
 resource "aws_secretsmanager_secret_version" "app_secrets" {
   secret_id = aws_secretsmanager_secret.app_secrets.id
   secret_string = jsonencode({
-    POSTGRES_URL    = "postgresql://coderag:${var.db_password}@${aws_db_instance.postgres.endpoint}/coderag"
-    GOOGLE_API_KEY  = var.google_api_key
-    GITHUB_TOKEN    = var.github_token
-    JWT_SECRET      = var.jwt_secret
-    S3_BUCKET       = aws_s3_bucket.code_repos.id
+    POSTGRES_URL      = "postgresql://coderag:${var.db_password}@postgres:5432/coderag"
+    POSTGRES_PASSWORD = var.db_password
+    GOOGLE_API_KEY    = var.google_api_key
+    GITHUB_TOKEN      = var.github_token
+    JWT_SECRET        = var.jwt_secret
+    S3_BUCKET         = aws_s3_bucket.code_repos.id
   })
 }
 
@@ -70,8 +71,8 @@ resource "aws_iam_role_policy" "s3" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect   = "Allow"
-      Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket"]
+      Effect = "Allow"
+      Action = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket"]
       Resource = [
         aws_s3_bucket.code_repos.arn,
         "${aws_s3_bucket.code_repos.arn}/*"

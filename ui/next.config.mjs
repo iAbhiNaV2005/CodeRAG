@@ -1,10 +1,12 @@
 /** @type {import('next').NextConfig} */
+const apiProxyUrl = process.env.API_PROXY_URL || 'http://localhost:8080';
+
 const nextConfig = {
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://100.57.90.44:8080/:path*', // Proxy to your AWS server
+        destination: `${apiProxyUrl}/:path*`,
       },
     ]
   },

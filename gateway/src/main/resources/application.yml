@@ -27,9 +27,9 @@ rate-limit:
 # ── AWS / DynamoDB ────────────────────────────────────────
 aws:
   region: ${AWS_REGION:us-east-1}
-  endpoint-url: ${AWS_ENDPOINT_URL:http://localhost:8001}
-  access-key-id: ${AWS_ACCESS_KEY_ID:test}
-  secret-access-key: ${AWS_SECRET_ACCESS_KEY:test}
+  endpoint-url: ${AWS_ENDPOINT_URL:}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
   dynamodb:
     rate-limits-table: ${DYNAMODB_RATE_LIMITS_TABLE:rate_limits}
 

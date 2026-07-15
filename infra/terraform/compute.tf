@@ -1,6 +1,5 @@
-# ═══════════════════════════════════════════════════════════
-# EC2 Instance (t3.small) — runs FastAPI + Gateway via Docker
-# ═══════════════════════════════════════════════════════════
+# EC2 instance that runs the complete backend stack:
+# Gateway + FastAPI + PostgreSQL/pgvector via Docker Compose.
 
 data "aws_ami" "amazon_linux" {
   most_recent = true
@@ -26,18 +25,40 @@ resource "aws_instance" "app" {
   key_name               = var.ec2_key_pair != "" ? var.ec2_key_pair : null
 
   root_block_device {
-    volume_size = 30
+    volume_size = var.ec2_root_volume_gb
     volume_type = "gp3"
   }
 
+  dynamic "instance_market_options" {
+    for_each = var.use_spot_instance ? [1] : []
+    content {
+      market_type = "spot"
+
+      spot_options {
+        spot_instance_type             = "one-time"
+        instance_interruption_behavior = "stop"
+        max_price                      = var.spot_max_price != "" ? var.spot_max_price : null
+      }
+    }
+  }
+
   user_data = base64encode(templatefile("${path.module}/user-data.sh", {
-    aws_region  = var.aws_region
-    secret_arn  = aws_secretsmanager_secret.app_secrets.arn
-    db_endpoint = aws_db_instance.postgres.endpoint
-    s3_bucket   = aws_s3_bucket.code_repos.id
+    aws_region     = var.aws_region
+    secret_arn     = aws_secretsmanager_secret.app_secrets.arn
+    pipeline_image = var.pipeline_image
+    gateway_image  = var.gateway_image
   }))
 
   tags = { Name = "${var.project_name}-server" }
+}
 
-  depends_on = [aws_db_instance.postgres]
+resource "aws_eip" "app" {
+  domain = "vpc"
+
+  tags = { Name = "${var.project_name}-server-ip" }
+}
+
+resource "aws_eip_association" "app" {
+  instance_id   = aws_instance.app.id
+  allocation_id = aws_eip.app.id
 }

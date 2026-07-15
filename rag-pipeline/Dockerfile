@@ -12,6 +12,8 @@ COPY pyproject.toml .
 COPY src/ src/
 
 # Install Python dependencies
+# Install CPU-only PyTorch first (no GPU on t3.small — saves ~1.5GB)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir .
 
 # Pre-download the embedding model

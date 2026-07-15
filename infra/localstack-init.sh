@@ -41,9 +41,9 @@ awslocal dynamodb update-time-to-live \
 awslocal dynamodb create-table \
     --table-name rate_limits \
     --attribute-definitions \
-        AttributeName=user_id,AttributeType=S \
+        AttributeName=key,AttributeType=S \
     --key-schema \
-        AttributeName=user_id,KeyType=HASH \
+        AttributeName=key,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
 # Enable TTL on rate_limits table
