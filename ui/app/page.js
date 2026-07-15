@@ -95,7 +95,7 @@ export default function Home() {
     };
   }, []);
 
-  // ── Chat ───────────────────────────────────────
+  // ── Chats ───────────────────────────────────────
   const handleAsk = useCallback(async (e) => {
     e.preventDefault();
     if (!question.trim() || streaming || !repoId) return;
