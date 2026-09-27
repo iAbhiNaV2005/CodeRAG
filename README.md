@@ -31,7 +31,7 @@ RAG/
 - Python 3.11+
 - Docker & Docker Compose
 - GitHub Personal Access Token
-- Google AI API key (for Gemini 1.5 Flash)
+- Google AI API key (for Gemini)
 
 ### 1. Start infrastructure
 

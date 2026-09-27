@@ -43,7 +43,19 @@ class Settings(BaseSettings):
     # --- Google AI (Gemini) ---
     google_api_key: str = Field(
         default="",
-        description="Google AI API key for Gemini 1.5 Flash",
+        description="Google AI API key for Gemini",
+    )
+    llm_model: str = Field(
+        default="gemini-2.5-flash",
+        description="LLM model name for the chat/query LangChain integration",
+    )
+    llm_temperature: float = Field(
+        default=0.1,
+        description="LLM temperature (low for factual code answers)",
+    )
+    llm_max_output_tokens: int = Field(
+        default=2048,
+        description="Maximum output tokens for LLM responses",
     )
 
     # --- Embedding ---
@@ -74,3 +86,27 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Cached singleton — call this everywhere instead of instantiating Settings directly."""
     return Settings()
+
+
+# ── Cached LLM instance ──────────────────────────────────────────
+_llm = None
+
+
+def get_llm():
+    """
+    Get or create the LangChain ChatGoogleGenerativeAI instance (singleton).
+
+    Avoids re-instantiating the model client on every request.
+    """
+    global _llm
+    if _llm is None:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        settings = get_settings()
+        _llm = ChatGoogleGenerativeAI(
+            model=settings.llm_model,
+            google_api_key=settings.google_api_key,
+            temperature=settings.llm_temperature,
+            max_output_tokens=settings.llm_max_output_tokens,
+        )
+    return _llm

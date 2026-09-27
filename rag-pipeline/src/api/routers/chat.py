@@ -11,11 +11,10 @@ from typing import AsyncGenerator
 from fastapi import APIRouter, HTTPException
 from sse_starlette.sse import EventSourceResponse
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 from src.api.models import ChatRequest
-from src.config import get_settings
+from src.config import get_llm
 from src.embedder import embed_query
 from src.storage import search_similar
 from src.dynamo.repos import get_repo
@@ -40,7 +39,6 @@ async def _stream_answer(
       - {"type": "sources", "sources": [...]}        (after answer completes)
       - {"type": "done"}                              (final event)
     """
-    settings = get_settings()
 
     # Get or create session
     session = get_or_create_session(session_id, repo_id, user_id)
@@ -84,19 +82,15 @@ async def _stream_answer(
 
     messages.append(HumanMessage(content=user_message_content))
 
-    # Step 4: Stream from Gemini
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=settings.google_api_key,
-        temperature=0.1,
-        max_output_tokens=2048,
-        streaming=True,
-    )
+    # Step 4: Stream from LLM (singleton instance from config)
+    llm = get_llm()
 
     full_answer = ""
 
     try:
         async for chunk in llm.astream(messages):
+            # LangChain v1: chunk.content is still a string for text-only
+            # streaming via AIMessageChunk.
             token = chunk.content
             if token:
                 full_answer += token

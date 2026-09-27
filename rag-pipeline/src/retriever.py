@@ -2,17 +2,16 @@
 Retriever + LLM chain.
 
 Embeds the user question, runs cosine similarity search against pgvector,
-assembles a grounded prompt, and calls Gemini 1.5 Flash via LangChain.
+assembles a grounded prompt, and calls the configured LLM via LangChain.
 Returns the answer with source citations.
 """
 
 import logging
 from dataclasses import dataclass, field
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
-from src.config import get_settings
+from src.config import get_settings, get_llm
 from src.embedder import embed_query
 from src.storage import SearchResult, search_similar
 
@@ -146,17 +145,15 @@ def query(
 
     messages.append(HumanMessage(content=user_message_content))
 
-    # Step 4: Call Gemini 1.5 Flash
-    logger.info("Calling Gemini 2.5 Flash...")
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=settings.google_api_key,
-        temperature=0.1,  # Low temp for factual code answers
-        max_output_tokens=2048,
-    )
+    # Step 4: Call LLM
+    llm = get_llm()
+    logger.info("Calling LLM (%s)...", settings.llm_model)
 
     response = llm.invoke(messages)
-    answer_text = response.content
+    # LangChain v1: .text safely extracts the human-readable text from the
+    # response, regardless of whether content is a plain string or structured
+    # content blocks.
+    answer_text = response.text
 
     # Step 5: Build source citations
     sources = [
