@@ -1,5 +1,8 @@
 # Code RAG — AI-Powered Codebase Intelligence
 
+>  **Live Application:** [https://codrag-xi.vercel.app/](https://codrag-xi.vercel.app/)
+
+
 **Code RAG** is an end-to-end Retrieval-Augmented Generation (RAG) platform designed specifically for software engineering codebases. Point it to any GitHub repository, and it indexes, parses, and embeds the code into a vector database, enabling conversational semantic queries grounded in actual source files with precise, line-level citations.
 
 ---
@@ -183,7 +186,7 @@ Once the application is running, Code RAG can be used through three different in
 
 The Web UI provides a browser-based developer workspace for indexing codebases and conducting real-time Q&A.
 
-1. **Access the Web Dashboard**: Open your browser and navigate to the frontend application (e.g., `http://localhost:3000` in development or your deployment URL).
+1. **Access the Web Dashboard**: Open your browser and navigate to the live deployment at [https://codrag-xi.vercel.app/](https://codrag-xi.vercel.app/) (or `http://localhost:3000` when running locally).
 2. **Ingest a Repository**:
    - Paste any valid public GitHub URL into the repository input bar (e.g., `https://github.com/expressjs/express` or `https://github.com/pallets/flask`).
    - Alternatively, click any of the pre-configured sample repository badges.

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +21,15 @@ import java.util.Map;
  * Proxy controller that forwards requests to the downstream FastAPI service.
  *
  * Key design:
- * - POST /ingest     -> FastAPI POST /ingest (JSON proxy)
- * - GET  /ingest/... -> FastAPI GET  /ingest/... (JSON proxy)
- * - POST /chat       -> FastAPI POST /chat (SSE streaming proxy)
- * - GET  /health     -> FastAPI GET  /health (JSON proxy)
+ * - POST /ingest -> FastAPI POST /ingest (JSON proxy)
+ * - GET /ingest/... -> FastAPI GET /ingest/... (JSON proxy)
+ * - POST /chat -> FastAPI POST /chat (SSE streaming proxy)
+ * - GET /health -> FastAPI GET /health (JSON proxy)
  *
- * Propagates downstream HTTP status codes (e.g., 400 Bad Request, 404 Not Found)
- * instead of letting WebClientResponseException escape as 500 Internal Server Error.
+ * Propagates downstream HTTP status codes (e.g., 400 Bad Request, 404 Not
+ * Found)
+ * instead of letting WebClientResponseException escape as 500 Internal Server
+ * Error.
  */
 @RestController
 public class ProxyController {
@@ -48,7 +51,8 @@ public class ProxyController {
         return webClient.get()
                 .uri("/health")
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+                })
                 .map(body -> {
                     body.put("gateway", "ok");
                     return body;
@@ -56,8 +60,7 @@ public class ProxyController {
                 .onErrorReturn(Map.of(
                         "status", "degraded",
                         "gateway", "ok",
-                        "fastapi", "unreachable"
-                ));
+                        "fastapi", "unreachable"));
     }
 
     // ── Ingest proxy ────────────────────────────────────────────
@@ -65,8 +68,7 @@ public class ProxyController {
     @PostMapping("/ingest")
     public Mono<ResponseEntity<Map<String, Object>>> ingestRepo(
             @RequestBody Map<String, Object> body,
-            ServerWebExchange exchange
-    ) {
+            ServerWebExchange exchange) {
         log.info("Proxying POST /ingest for repo: {}", body.get("repo_url"));
 
         return webClient.post()
@@ -74,11 +76,15 @@ public class ProxyController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body)
                 .retrieve()
-                .toEntity(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .toEntity(new ParameterizedTypeReference<Map<String, Object>>() {
+                })
                 .onErrorResume(WebClientResponseException.class, ex -> {
-                    log.warn("Downstream error on POST /ingest: {} - {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+                    log.warn("Downstream error on POST /ingest: {} - {}", ex.getStatusCode(),
+                            ex.getResponseBodyAsString());
                     try {
-                        Map<String, Object> errorBody = ex.getResponseBodyAs(new ParameterizedTypeReference<Map<String, Object>>() {});
+                        Map<String, Object> errorBody = ex
+                                .getResponseBodyAs(new ParameterizedTypeReference<Map<String, Object>>() {
+                                });
                         return Mono.just(ResponseEntity.status(ex.getStatusCode()).body(errorBody));
                     } catch (Exception e) {
                         return Mono.just(ResponseEntity.status(ex.getStatusCode())
@@ -94,11 +100,15 @@ public class ProxyController {
         return webClient.get()
                 .uri("/ingest/status/{repoId}", repoId)
                 .retrieve()
-                .toEntity(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .toEntity(new ParameterizedTypeReference<Map<String, Object>>() {
+                })
                 .onErrorResume(WebClientResponseException.class, ex -> {
-                    log.warn("Downstream error on GET /ingest/status/{}: {} - {}", repoId, ex.getStatusCode(), ex.getResponseBodyAsString());
+                    log.warn("Downstream error on GET /ingest/status/{}: {} - {}", repoId, ex.getStatusCode(),
+                            ex.getResponseBodyAsString());
                     try {
-                        Map<String, Object> errorBody = ex.getResponseBodyAs(new ParameterizedTypeReference<Map<String, Object>>() {});
+                        Map<String, Object> errorBody = ex
+                                .getResponseBodyAs(new ParameterizedTypeReference<Map<String, Object>>() {
+                                });
                         return Mono.just(ResponseEntity.status(ex.getStatusCode()).body(errorBody));
                     } catch (Exception e) {
                         return Mono.just(ResponseEntity.status(ex.getStatusCode())
@@ -112,8 +122,7 @@ public class ProxyController {
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> chat(
             @RequestBody Map<String, Object> body,
-            ServerWebExchange exchange
-    ) {
+            ServerWebExchange exchange) {
         // Inject user ID from JWT into the request body
         String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
         if (userId != null) {
@@ -127,7 +136,8 @@ public class ProxyController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body)
                 .retrieve()
-                .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
+                .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {
+                })
                 .doOnError(e -> log.error("SSE proxy error: {}", e.getMessage()));
     }
 }
